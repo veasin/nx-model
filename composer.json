@@ -1,0 +1,29 @@
+{
+  "name": "urn2/nx-model",
+  "description": "mvc-model for nx",
+  "homepage": "https://github.com/urn2/nx",
+  "type": "framework",
+  "authors": [
+    {
+      "name": "Vea",
+      "homepage": "http://www.uper.net",
+      "email": "vea@live.cn"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "urn2/nx": ">=1.2",
+    "urn2/nx-db-pdo": "*"
+  },
+  "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {
+      "nx\\parts\\model\\": [
+        "src/parts/"
+      ],
+      "nx\\helpers\\model\\": [
+        "src/helpers/"
+      ]
+    }
+  }
+}

@@ -27,6 +27,23 @@ class multiple{
 		return $table->execute()->first($this->single);
 	}
 	/**
+	 * @param \nx\helpers\db\sql $table
+	 * @param array              $conditions
+	 * @param array              $options
+	 * @return array|null
+	 */
+	private function __list(\nx\helpers\db\sql $table, array $conditions, array $options):?array{
+		$desc=$options['desc'] ?? 'DESC';
+		if(is_int($desc)) $desc=['ASC', 'DESC'][$desc] ?? 'DESC';
+		if(array_key_exists('sort', $options)) $table->sort($options['sort'], $desc);
+		$table->select(array_key_exists('select', $options) ?$options['select'] :[]);
+		if(array_key_exists('LIST', $options) && is_callable($options['LIST'])) call_user_func($options['LIST'], $table, $conditions, $options);
+		if(array_key_exists('MAP', $options) && is_callable($options['MAP'])){
+			$list=$table->execute()->fetchMap($options['MAP']);
+		}else $list=$table->execute()->fetchAll();
+		return $list;
+	}
+	/**
 	 * 私有方法 返回多条数据
 	 * @param array $conditions
 	 * @param array $options
@@ -34,22 +51,20 @@ class multiple{
 	 */
 	protected function _list(array $conditions=[], array $options=[]):array{
 		$table=$this->table();
-		$table->select($table::COUNT('*')->as('COUNT'));
-		if(count($conditions)) $table->where($conditions);
-		if(array_key_exists('COUNT', $options) && is_callable($options['COUNT'])) call_user_func($options['COUNT'], $table, $conditions, $options);
-		$ok=$table->execute()->first();
-		$count=null !== $ok ?$ok['COUNT'] :0;
-		if($count > 0){
-			$desc =$options['desc'] ?? 'DESC';
-			if(is_int($desc)) $desc =['ASC', 'DESC'][$desc] ?? 'DESC';
-			if(array_key_exists('sort', $options)) $table->sort($options['sort'], $desc);
-			if(array_key_exists('page', $options)) $table->page($options['page'] ?? 1, $options['max'] ?? 10);
-			$table->select(array_key_exists('select', $options) ?$options['select'] :[]);
-			if(array_key_exists('LIST', $options) && is_callable($options['LIST'])) call_user_func($options['LIST'], $table, $conditions, $options);
-			if(array_key_exists('MAP', $options) && is_callable($options['MAP'])){
-				$list=$table->execute()->fetchMap($options['MAP']);
-			}else $list=$table->execute()->fetchAll();
-		}else $list=[];
+		if(array_key_exists('page', $options) && !array_key_exists('COUNT', $options) && false === $options['page']){
+			$list=$this->__list($table, $conditions, $options);
+			$count=count($list);
+		}else{
+			$table->select($table::COUNT('*')->as('COUNT'));
+			if(count($conditions)) $table->where($conditions);
+			if(array_key_exists('COUNT', $options) && is_callable($options['COUNT'])) call_user_func($options['COUNT'], $table, $conditions, $options);
+			$ok=$table->execute()->first();
+			$count=null !== $ok ?$ok['COUNT'] :0;
+			if($count > 0){
+				if(array_key_exists('page', $options) && false !== $options['page']) $table->page($options['page'] ?? 1, $options['max'] ?? 10);
+				$list=$this->__list($table, $conditions, $options);
+			}else $list=[];
+		}
 		return ['count'=>$count, 'list'=>$list];
 	}
 	/**
@@ -62,4 +77,3 @@ class multiple{
 		return $this->_list($conditions, $options);
 	}
 }
-

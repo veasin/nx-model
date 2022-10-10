@@ -51,12 +51,12 @@ class multiple{
 	 */
 	protected function _list(array $conditions=[], array $options=[]):array{
 		$table=$this->table();
+		if(count($conditions)) $table->where($conditions);
 		if(array_key_exists('page', $options) && !array_key_exists('COUNT', $options) && false === $options['page']){
 			$list=$this->__list($table, $conditions, $options);
 			$count=count($list);
 		}else{
 			$table->select($table::COUNT('*')->as('COUNT'));
-			if(count($conditions)) $table->where($conditions);
 			if(array_key_exists('COUNT', $options) && is_callable($options['COUNT'])) call_user_func($options['COUNT'], $table, $conditions, $options);
 			$ok=$table->execute()->first();
 			$count=null !== $ok ?$ok['COUNT'] :0;

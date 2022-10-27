@@ -42,7 +42,7 @@ class single{
 			$this->_data=$this->data;
 			if($ok) $this->plugin('update');
 		}else{
-			if($this->field_of_created) $this->data[$this->field_of_created]=time();
+			if($this->field_of_created && !array_key_exists($this->field_of_created, $this->data)) $this->data[$this->field_of_created]=time();
 			$this->plugin('before_create');
 			$id=$this->table()->create($this->data)->execute()->lastInsertId();
 			$ok=$id > 0;

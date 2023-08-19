@@ -3,7 +3,7 @@
 mvc-model for nx
 
 
-> composer require urn2/nx-model
+> composer require veasin/nx-model
 
 ```
 ```

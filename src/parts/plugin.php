@@ -13,7 +13,7 @@ trait plugin{
 		$prefix="plugin_{$type}_";
 		foreach(get_class_methods($this) as $method){
 			if(str_starts_with($method, $prefix)){
-				$this->log('plugin: '.$method);
+				$this->runtime(' plugin: '.$this::class.'->'.$method.'()');
 				$result_1=call_user_func_array([$this, $method], $args);
 				is_bool($result_1) && $result&=$result_1;
 			}

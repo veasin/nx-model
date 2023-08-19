@@ -1,7 +1,7 @@
 {
-  "name": "urn2/nx-model",
+  "name": "veasin/nx-model",
   "description": "mvc-model for nx",
-  "homepage": "https://github.com/urn2/nx",
+  "homepage": "https://github.com/veasin/nx",
   "type": "framework",
   "authors": [
     {
@@ -12,10 +12,9 @@
   ],
   "require": {
     "php": ">=8.1",
-    "urn2/nx": ">=1.2",
-    "urn2/nx-db-pdo": "*"
+    "veasin/nx":"*",
+    "veasin/nx-db-pdo":"*"
   },
-  "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
       "nx\\parts\\model\\": [

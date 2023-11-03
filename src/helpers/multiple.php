@@ -38,10 +38,20 @@ class multiple{
 		if(array_key_exists('sort', $options)) $table->sort($options['sort'], $desc);
 		$table->select(array_key_exists('select', $options) ?$options['select'] :[]);
 		if(array_key_exists('LIST', $options) && is_callable($options['LIST'])) call_user_func($options['LIST'], $table, $conditions, $options);
-		if(array_key_exists('MAP', $options) && is_callable($options['MAP'])){
+		if(array_key_exists('FETCH', $options) && is_callable($options['FETCH'])){
+			$list = call_user_func($options['FETCH'], $table->execute(), $options);
+		}elseif(array_key_exists('MAP', $options) && is_callable($options['MAP'])){
 			$list=$table->execute()->fetchMap($options['MAP']);
 		}else $list=$table->execute()->fetchAll();
 		return $list;
+	}
+	protected function __count(\nx\helpers\db\sql $table, array $conditions=[], array $options=[]):int{
+		$table->select($table::COUNT('*')->as('COUNT'));
+		if(count($conditions)) $table->where($conditions);
+		if(array_key_exists('COUNT', $options) && is_callable($options['COUNT'])) call_user_func($options['COUNT'], $table, $conditions, $options);
+		$ok=$table->execute()->first();
+		$count=null !== $ok ?$ok['COUNT'] :0;
+		return $count;
 	}
 	/**
 	 * 私有方法 返回多条数据
@@ -51,15 +61,12 @@ class multiple{
 	 */
 	protected function _list(array $conditions=[], array $options=[]):array{
 		$table=$this->table();
-		if(count($conditions)) $table->where($conditions);
 		if(array_key_exists('page', $options) && !array_key_exists('COUNT', $options) && false === $options['page']){
+			if(count($conditions)) $table->where($conditions);
 			$list=$this->__list($table, $conditions, $options);
 			$count=count($list);
 		}else{
-			$table->select($table::COUNT('*')->as('COUNT'));
-			if(array_key_exists('COUNT', $options) && is_callable($options['COUNT'])) call_user_func($options['COUNT'], $table, $conditions, $options);
-			$ok=$table->execute()->first();
-			$count=null !== $ok ?$ok['COUNT'] :0;
+			$count =$this->__count($table, $conditions, $options);
 			if($count > 0){
 				if(array_key_exists('page', $options) && false !== $options['page']) $table->page($options['page'] ?? 1, $options['max'] ?? 10);
 				$list=$this->__list($table, $conditions, $options);

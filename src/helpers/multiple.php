@@ -1,6 +1,7 @@
 <?php
 namespace nx\helpers\model;
 
+use nx\helpers\db\sql;
 use nx\parts\callApp;
 use nx\parts\db\table;
 use nx\parts\model\cache;
@@ -11,7 +12,10 @@ use nx\parts\model\cache;
  */
 class multiple{
 	use callApp, cache, table;
-
+	public static bool $TOMBSTONE=false; //逻辑删除
+	public static string $FIELD_CREATED ='created_at';
+	public static string $FIELD_UPDATED ='updated_at';
+	public static string $FIELD_DELETED ='deleted_at';
 	protected mixed $single=null;
 	/**
 	 * 私有方法 返回单条数据
@@ -20,6 +24,7 @@ class multiple{
 	 * @return array|null
 	 */
 	protected function _find(array $conditions=[], array $options=[]):?array{
+		if(static::$TOMBSTONE) $conditions[static::$FIELD_DELETED] =0;
 		$table=$this->table()->select()->where($conditions);
 		if(array_key_exists('sort', $options)) $table->sort($options['sort'], 'DESC');
 		$table->select(array_key_exists('select', $options) ?$options['select'] :[]);
@@ -27,12 +32,12 @@ class multiple{
 		return $table->execute()->first($this->single);
 	}
 	/**
-	 * @param \nx\helpers\db\sql $table
+	 * @param sql $table
 	 * @param array              $conditions
 	 * @param array              $options
 	 * @return array|null
 	 */
-	private function __list(\nx\helpers\db\sql $table, array $conditions, array $options):?array{
+	private function __list(sql $table, array $conditions, array $options):?array{
 		$desc=$options['desc'] ?? 'DESC';
 		if(is_int($desc)) $desc=['ASC', 'DESC'][$desc] ?? 'DESC';
 		if(array_key_exists('sort', $options)) $table->sort($options['sort'], $desc);
@@ -45,13 +50,12 @@ class multiple{
 		}else $list=$table->execute()->fetchAll();
 		return $list;
 	}
-	protected function __count(\nx\helpers\db\sql $table, array $conditions=[], array $options=[]):int{
+	protected function __count(sql $table, array $conditions=[], array $options=[]):int{
 		$table->select($table::COUNT('*')->as('COUNT'));
 		if(count($conditions)) $table->where($conditions);
 		if(array_key_exists('COUNT', $options) && is_callable($options['COUNT'])) call_user_func($options['COUNT'], $table, $conditions, $options);
 		$ok=$table->execute()->first();
-		$count=null !== $ok ?$ok['COUNT'] :0;
-		return $count;
+		return null !== $ok ?$ok['COUNT'] :0;
 	}
 	/**
 	 * 私有方法 返回多条数据
@@ -61,6 +65,7 @@ class multiple{
 	 */
 	protected function _list(array $conditions=[], array $options=[]):array{
 		$table=$this->table();
+		if(static::$TOMBSTONE) $conditions[static::$FIELD_DELETED] =0;
 		if(array_key_exists('page', $options) && !array_key_exists('COUNT', $options) && false === $options['page']){
 			if(count($conditions)) $table->where($conditions);
 			$list=$this->__list($table, $conditions, $options);

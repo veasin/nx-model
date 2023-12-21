@@ -13,11 +13,12 @@ class single{
 	protected string $id_key ='id';
 	protected array $data=[];
 	protected array $_data=[];//初始化数据
-	protected bool $tombstone=false; //逻辑删除
-	protected string $field_of_created ='create_time';
-	protected string $field_of_updated ='update_time';
-	protected string $field_of_deleted ='delete_time';
+	/**
+	 * @var multiple
+	 */
+	protected ?string $multiple=null;
 	public function __construct(array $data=[]){
+		if(null ===$this->multiple) throw new \Error(static::class. ' need set multiple!');
 		$this->data=$this->_data=$data ?? [];
 		$this->id=$this->data[$this->id_key] ?? 0;
 		if(0 === $this->id) $this->default($data);
@@ -37,12 +38,12 @@ class single{
 		if($this->id){
 			$update=array_diff_assoc($this->data, $this->_data);//对比出需要更新数据
 			if(empty($update)) return true;//如果无须更新返回成功
-			if($this->field_of_updated) $update[$this->field_of_updated]=time();
+			if($this->multiple::$FIELD_UPDATED) $update[$this->multiple::$FIELD_UPDATED]=time();
 			$ok=$this->table()->where([$this->id_key=>$this->id])->update($update)->execute()->ok();
 			$this->_data=$this->data;
 			if($ok) $this->plugin('update');
 		}else{
-			if($this->field_of_created && !array_key_exists($this->field_of_created, $this->data)) $this->data[$this->field_of_created]=time();
+			if($this->multiple::$FIELD_CREATED && !array_key_exists($this->multiple::$FIELD_CREATED, $this->data)) $this->data[$this->multiple::$FIELD_CREATED]=time();
 			$this->plugin('before_create');
 			$id=$this->table()->create($this->data)->execute()->lastInsertId();
 			$ok=$id > 0;
@@ -63,8 +64,8 @@ class single{
 		if($this->id > 0){
 			$this->_data=$this->data;
 			$table=$this->table()->where([$this->id_key=>$this->id]);
-			if($this->tombstone && $this->field_of_deleted){//逻辑删除
-				$table->update([$this->field_of_deleted=>time()]);
+			if($this->multiple::$TOMBSTONE && $this->multiple::$FIELD_DELETED){//逻辑删除
+				$table->update([$this->multiple::$FIELD_DELETED=>time()]);
 			}else $table->delete();
 			$ok=$table->execute()->ok();
 			if($ok) $this->plugin('delete');

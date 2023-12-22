@@ -10,13 +10,13 @@ use nx\parts\model\cache;
  * 群组数据
  * @package life\models\content
  */
-class multiple{
+abstract class multiple{
 	use callApp, cache, table;
-	public static bool $TOMBSTONE=false; //逻辑删除
-	public static string $FIELD_CREATED ='created_at';
-	public static string $FIELD_UPDATED ='updated_at';
-	public static string $FIELD_DELETED ='deleted_at';
-	protected mixed $single=null;
+	const TOMBSTONE=false; //逻辑删除
+	const FIELD_CREATED ='created_at';
+	const FIELD_UPDATED ='updated_at';
+	const FIELD_DELETED ='deleted_at';
+	protected const SINGLE =null;
 	/**
 	 * 私有方法 返回单条数据
 	 * @param array $conditions 查询条件
@@ -24,12 +24,12 @@ class multiple{
 	 * @return array|null
 	 */
 	protected function _find(array $conditions=[], array $options=[]):?array{
-		if(static::$TOMBSTONE) $conditions[static::$FIELD_DELETED] =0;
+		if(static::TOMBSTONE) $conditions[static::FIELD_DELETED] =0;
 		$table=$this->table()->select()->where($conditions);
 		if(array_key_exists('sort', $options)) $table->sort($options['sort'], 'DESC');
 		$table->select(array_key_exists('select', $options) ?$options['select'] :[]);
 		if(array_key_exists('FIND', $options) && is_callable($options['FIND'])) call_user_func($options['FIND'], $table, $conditions, $options);
-		return $table->execute()->first($this->single);
+		return $table->execute()->first(static::SINGLE);
 	}
 	/**
 	 * @param sql $table
@@ -65,7 +65,7 @@ class multiple{
 	 */
 	protected function _list(array $conditions=[], array $options=[]):array{
 		$table=$this->table();
-		if(static::$TOMBSTONE) $conditions[static::$FIELD_DELETED] =0;
+		if(static::TOMBSTONE) $conditions[static::FIELD_DELETED] =0;
 		if(array_key_exists('page', $options) && !array_key_exists('COUNT', $options) && false === $options['page']){
 			if(count($conditions)) $table->where($conditions);
 			$list=$this->__list($table, $conditions, $options);

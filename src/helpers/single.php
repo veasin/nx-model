@@ -1,16 +1,16 @@
 <?php
 namespace nx\helpers\model;
 
+use nx\helpers\db\sql;
 use nx\parts\callApp;
-use nx\parts\db\table;
 use nx\parts\model\cache;
 use nx\parts\model\plugin;
 
 abstract class single{
-	use callApp, plugin, cache, table;
+	use callApp, plugin, cache;
 
 	public int $id=0;
-	protected string $id_key ='id';
+	protected string $id_key ='';
 	protected array $data=[];
 	protected array $_data=[];//初始化数据
 	/**
@@ -19,9 +19,19 @@ abstract class single{
 	protected const MULTIPLE=null;
 	public function __construct(array $data=[]){
 		if(null ===static::MULTIPLE) throw new \Error(static::class. ' need set multiple!');
+		if(empty($this->id_key)) $this->id_key = static::MULTIPLE::TABLE_PRIMARY;
 		$this->data=$this->_data=$data ?? [];
 		$this->id=$this->data[$this->id_key] ?? 0;
 		if(0 === $this->id) $this->default($data);
+	}
+	/**
+	 * @param string|null $tableName
+	 * @param string|null $primary
+	 * @param string|null $config
+	 * @return sql
+	 */
+	protected function table(?string $tableName=null, ?string $primary=null, ?string $config=null):sql{
+		return $this->db($config ?? static::MULTIPLE::TABLE_DB)->from($tableName ?? static::MULTIPLE::TABLE_NAME, $primary ?? static::MULTIPLE::TABLE_PRIMARY ?? 'id');
 	}
 	/**
 	 * 设置默认属性值

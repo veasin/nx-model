@@ -29,4 +29,16 @@ trait cache{
 		}
 		return self::$_cache_model[$name];
 	}
+	/**
+	 * 在app上回调缓存对应的数据，跨实例
+	 * @param string|array $Namespace
+	 * @param callable     $callback
+	 * @param              ...$args
+	 * @return mixed
+	 */
+	protected function cacheApp(string|array $Namespace, callable $callback, ...$args):mixed{
+		$app =\nx\app::$instance;
+		if(!isset($app[$Namespace])) $app[$Namespace]=call_user_func_array($callback,$args);
+		return $app[$Namespace];
+	}
 }

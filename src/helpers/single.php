@@ -114,11 +114,13 @@ abstract class single{
 	/**
 	 * 更新自身数据
 	 * @param array $data
+	 * @param bool  $over 是否覆盖更新
 	 * @return $this
 	 */
-	public function update(array $data):self{
+	public function update(array $data, bool $over=false):self{
 		foreach($data as $key=>$value){
-			if(array_key_exists($key, $this->_data)) $this->data[$key]=$value;
+			if($over) $this->data[$key]=$value;
+			else if(array_key_exists($key, $this->_data)) $this->data[$key]=$value;
 		}
 		return $this;
 	}

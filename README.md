@@ -7,9 +7,14 @@ mvc-model for nx
 
 ```php
 class users extends multiple{
-    const TABLE_NAME = 'user';
+    const TABLE = 'user u';
 }
 class user extends single{
     const MULTIPLE = users::class;
 }
+```
+
+```php
+$table =users::sql();
+$user->list();
 ```

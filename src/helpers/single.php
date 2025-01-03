@@ -31,7 +31,7 @@ abstract class single{
 	 * @return sql
 	 */
 	protected function table(?string $tableName=null, ?string $primary=null, ?string $config=null):sql{
-		return $this->db($config ?? static::MULTIPLE::TABLE_DB)->from($tableName ?? static::MULTIPLE::TABLE_NAME, $primary ?? static::MULTIPLE::TABLE_PRIMARY ?? 'id');
+		return $this->db($config ?? static::MULTIPLE::TABLE_DB)->from($tableName ?? static::MULTIPLE::TABLE, $primary ?? static::MULTIPLE::TABLE_PRIMARY ?? 'id');
 	}
 	/**
 	 * 设置默认属性值

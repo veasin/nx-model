@@ -11,8 +11,8 @@ use nx\parts\model\cache;
  */
 abstract class multiple{
 	use callApp, cache;
+	const TABLE ='';
 	const TABLE_DB ='default';
-	const TABLE_NAME ='';
 	const TABLE_PRIMARY ='id';
 	const TOMBSTONE = false; //逻辑删除
 	const FIELD_CREATED = 'created_at';
@@ -23,6 +23,7 @@ abstract class multiple{
 	const OPT_DESC = 'desc';
 	const OPT_PAGE = 'page';
 	const OPT_MAX = 'max';
+	const OPT_OUTPUT = 'output';
 	const CALLBACK_LIST = 'LIST';
 	const CALLBACK_FIND = 'FIND';
 	const CALLBACK_FETCH = 'FETCH';
@@ -39,7 +40,10 @@ abstract class multiple{
 	 * @return sql
 	 */
 	protected function table(?string $tableName=null, ?string $primary=null, ?string $config=null):sql{
-		return $this->db($config ?? static::TABLE_DB)->from($tableName ?? static::TABLE_NAME, $primary ?? static::TABLE_PRIMARY ?? 'id');
+		return $this->db($config ?? static::TABLE_DB)->from($tableName ?? static::TABLE, $primary ?? static::TABLE_PRIMARY ?? 'id');
+	}
+	static public function sql():sql{
+		return \nx\app::$instance?->db(static::TABLE_DB)->from(static::TABLE, static::TABLE_PRIMARY ?? 'id');
 	}
 	/**
 	 * 私有方法 返回单条数据
@@ -98,6 +102,7 @@ abstract class multiple{
 	 *         page:int,
 	 *         max:int,
 	 *         select:array,
+	 *         output:array,
 	 *         COUNT:callable,
 	 *         LIST:callable,
 	 *         FETCH:callable,
@@ -133,6 +138,7 @@ abstract class multiple{
 	 *        page:int,
 	 *        max:int,
 	 *        select:array,
+	 *        output:array,
 	 *        COUNT:callable,
 	 *        LIST:callable,
 	 *        FETCH:callable,

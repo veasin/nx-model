@@ -20,8 +20,8 @@ trait middleware{
 			$generator = $this->{$method}(...$args);
 			if($generator instanceof \Generator){
 				$result = $generator->current() ?? null;
-				if($result === false) break;
 				$_methods[] = $generator;
+				if($result === false) break;
 			} else if(false ===$generator){
 				$result =false;
 				break;

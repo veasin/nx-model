@@ -69,11 +69,11 @@ abstract class multiple{
 		$this->__callback($options, static::CALLBACK_COUNT, $table, $conditions, $options);
 		return $table->execute()->first()['COUNT'] ?? 0;
 	}
-	private function __fetch(sql $table, array $conditions, array $options): array{
+	private function __fetch(sql $table, array $conditions, array $options): ?array{
 		$table->where($conditions);
 		$this->__select($table, $options, $this->__sort($options));
 		$this->__callback($options, static::CALLBACK_LIST, $table, $conditions, $options);
-		isset($options[static::OPT_PAGE]) && $table->page($options[static::OPT_PAGE] ?? 1, $options[static::OPT_MAX] ?? 10);
+		isset($options[static::OPT_PAGE]) && $options[static::OPT_PAGE] && $table->page($options[static::OPT_PAGE] ?? 1, $options[static::OPT_MAX] ?? 10);
 		return match (true) {
 			isset($options[static::CALLBACK_FETCH]) => $options[static::CALLBACK_FETCH]($table->execute(), $options),
 			isset($options[static::CALLBACK_MAP]) => $table->execute()->fetchMap($options[static::CALLBACK_MAP]),
@@ -91,8 +91,7 @@ abstract class multiple{
 		$table->select($options[static::OPT_SELECT] ?? []);
 	}
 	private function __callback(array $options, string $type, ...$args): void{
-		//isset($options[$type]) && is_callable($options[$type]) && $options[$type](...$args);
-		$options[$type]?->call($this, ...$args);
+		($options[$type] ?? null)?->call($this, ...$args);
 	}
 	/**
 	 * 私有方法 返回多条数据

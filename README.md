@@ -18,3 +18,16 @@ class user extends single{
 $table =users::sql();
 $user->list();
 ```
+
+## todo
+
+* [x] S.delete() -> S.destroy() rename
+* [ ] S.reload() reload from db
+* [ ] S.save(...fieldNames) only save some fields
+* [ ] S['id'] need support?
+* [ ] M.find() -> yield<data|obj> ?
+* [ ] M.truncate() ?
+* [ ] M.define() ?
+  * [ ] add getter&setter ?
+  * [ ] validate ?
+  * [ ] M.sync() ? CREATE TABLE IF NO EXISTS `name` (...)

@@ -23,5 +23,8 @@
         "src/helpers/"
       ]
     }
+  },
+  "require-dev": {
+    "veasin/nx-tools":">=0.0.12"
   }
 }

@@ -116,7 +116,7 @@ abstract class multiple{
 		if(static::TOMBSTONE) $conditions[static::FIELD_DELETED] = 0;
 		$count = match (true) {
 			isset($options[static::OPT_PAGE]) && $options[static::OPT_PAGE] === false => count($this->__fetch($table, $conditions, $options)),
-			default => $this->__count(clone $table, $conditions, $options)
+			default => $this->__count($table, $conditions, $options)
 		};
 		return [
 			static::RESULT_COUNT => $count,

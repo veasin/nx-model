@@ -38,13 +38,13 @@ abstract class multiple{
 	 * @param string|null $tableName
 	 * @param string|null $primary
 	 * @param string|null $config
-	 * @return sql
+	 * @return sql\table
 	 */
-	protected function table(?string $tableName = null, ?string $primary = null, ?string $config = null): sql{
-		return $this->db($config ?? static::TABLE_DB)->from($tableName ?? static::TABLE, $primary ?? static::TABLE_PRIMARY);
+	protected function table(?string $tableName = null, ?string $primary = null, ?string $config = null): sql\table{
+		return $this->db($config ?? static::TABLE_DB)->table($tableName ?? static::TABLE, $primary ?? static::TABLE_PRIMARY);
 	}
-	static public function sql(): sql{
-		return \nx\app::$instance?->db(static::TABLE_DB)->from(static::TABLE, static::TABLE_PRIMARY);
+	static public function sql(): sql\table{
+		return \nx\app::$instance?->db(static::TABLE_DB)->table(static::TABLE, static::TABLE_PRIMARY);
 	}
 	/**
 	 * 私有方法 返回单条数据
@@ -112,7 +112,7 @@ abstract class multiple{
 	 * @return array{count:int, list:array}
 	 */
 	protected function _list(array $conditions = [], array $options = []): array{
-		$table = $this->table();
+		$table = $this->table()->select();
 		if(static::TOMBSTONE) $conditions[static::FIELD_DELETED] = 0;
 		$count = match (true) {
 			isset($options[static::OPT_PAGE]) && $options[static::OPT_PAGE] === false => count($this->__fetch($table, $conditions, $options)),

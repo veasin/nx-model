@@ -1,7 +1,7 @@
 <?php
 namespace nx\helpers\model;
 
-use nx\helpers\db\sql;
+use nx\helpers\db\sql\table;
 use nx\parts\callApp;
 use nx\parts\model\cache;
 use nx\parts\model\middleware;
@@ -28,10 +28,10 @@ abstract class single{
 	 * @param string|null $tableName
 	 * @param string|null $primary
 	 * @param string|null $config
-	 * @return sql
+	 * @return table
 	 */
-	protected function table(?string $tableName = null, ?string $primary = null, ?string $config = null): sql{
-		return $this->db($config ?? static::MULTIPLE::TABLE_DB)->from($tableName ?? static::MULTIPLE::TABLE, $primary ?? static::MULTIPLE::TABLE_PRIMARY);
+	protected function table(?string $tableName = null, ?string $primary = null, ?string $config = null): table{
+		return $this->db($config ?? static::MULTIPLE::TABLE_DB)->table($tableName ?? static::MULTIPLE::TABLE, $primary ?? static::MULTIPLE::TABLE_PRIMARY);
 	}
 	protected function update_middle($update = []): \Generator{
 		if($ok = !empty($update)){

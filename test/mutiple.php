@@ -16,11 +16,6 @@ class user extends \nx\helpers\model\single{
 	protected function table(?string $tableName = null, ?string $primary = null, ?string $config = null): \nx\helpers\db\sql\table{
 		return new fakeSQL($tableName ?? static::MULTIPLE::TABLE, $primary ?? static::MULTIPLE::TABLE_PRIMARY, null);
 	}
-	protected function delete_before(){// a-z before middle
-		//yield 'ok';
-
-	}
-
 }
 
 class fakeResult extends \nx\helpers\db\pdo\result{
@@ -113,12 +108,6 @@ class fakeSQL extends nx\helpers\db\sql{
 	}
 }
 
-$user =new user(['name'=>'test', 'email'=>'test@test.com']);
-$user->update(['name'=>'test1']);
-$user->save();
-
-$user =new user(['id'=>2,'name'=>'test', 'email'=>'test@test.com']);
-$user->update(['name'=>'test1']);
-$user->save();
-
-$user->destroy();
+$users =new users();
+$user =$users->list();
+var_dump($user);

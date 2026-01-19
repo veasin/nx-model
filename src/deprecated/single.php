@@ -6,6 +6,9 @@ use nx\parts\callApp;
 use nx\parts\model\cache;
 use nx\parts\model\middleware;
 
+/**
+ * @deprecated 2025/11/16
+ */
 abstract class single{
 	use callApp, middleware, cache;
 

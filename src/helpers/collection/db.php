@@ -1,17 +1,12 @@
 <?php
-
-namespace nx\helpers\model;
+declare(strict_types=1);
+namespace nx\helpers\model\collection;
 
 use nx\helpers\db\sql;
-use nx\parts\callApp;
-use nx\parts\model\cache;
+use nx\helpers\model\entity;
+use nx\helpers\db\sql\table;
 
-/**
- * 群组数据
- */
-abstract class multiple{
-	use callApp, cache;
-
+trait db{
 	const TABLE = '';
 	const TABLE_DB = 'default';
 	const TABLE_PRIMARY = 'id';
@@ -33,18 +28,9 @@ abstract class multiple{
 	const RESULT_COUNT = 'count';
 	const RESULT_LIST = 'list';
 	const DEFAULT_SORT = 'DESC';
-	protected const SINGLE = null;
-	/**
-	 * @param string|null $tableName
-	 * @param string|null $primary
-	 * @param string|null $config
-	 * @return sql\table
-	 */
-	protected function table(?string $tableName = null, ?string $primary = null, ?string $config = null): sql\table{
-		return $this->db($config ?? static::TABLE_DB)->table($tableName ?? static::TABLE, $primary ?? static::TABLE_PRIMARY);
-	}
-	static public function sql(): sql\table{
-		return \nx\app::$instance?->db(static::TABLE_DB)->table(static::TABLE, static::TABLE_PRIMARY);
+
+	protected function table(?string $tableName = null, ?string $primary = null, ?string $config = null): table{
+		return \nx\app::$instance?->db($config ?? static::TABLE_DB)->table($tableName ?? static::TABLE, $primary ?? static::TABLE_PRIMARY);
 	}
 	/**
 	 * 私有方法 返回单条数据
@@ -62,10 +48,10 @@ abstract class multiple{
 		$table = $this->table()->select()->where($conditions);
 		$this->__select($table, $options);
 		$this->__callback($options, static::CALLBACK_FIND, $table, $conditions, $options);
-		return $table->execute()->first(static::SINGLE) ?: null;
+		return $table->execute()->first() ?: null;//static::ENTITY
 	}
 	private function __count(sql $table, array $conditions, array $options): int{
-		$table->select($table::COUNT('*')->as('COUNT'))->where($conditions);
+		$table->select(sql::COUNT('*')->as('COUNT'))->where($conditions);
 		$this->__callback($options, static::CALLBACK_COUNT, $table, $conditions, $options);
 		return $table->execute()->first()['COUNT'] ?? 0;
 	}
@@ -123,25 +109,38 @@ abstract class multiple{
 			static::RESULT_LIST => $count > 0 ? $this->__fetch($table, $conditions, $options) : [],
 		];
 	}
-	/**
-	 * 返回数据列表
-	 *
-	 * @param array $conditions 查询条件
-	 * @param array{
-	 *        desc:string|int,
-	 *        sort:string|array{string:string|int},
-	 *        page:int,
-	 *        max:int,
-	 *        select:array,
-	 *        output:array,
-	 *        COUNT:callable,
-	 *        LIST:callable,
-	 *        FETCH:callable,
-	 *        MAP:callable
-	 *    }         $options    支持 sort 排序参数 page 翻页 [page, max]
-	 * @return array{count:int, list:array}
-	 */
-	public function list(array $conditions = [], array $options = []): array{
+	protected function source_query(array $conditions = [], array $options=[]):array{
 		return $this->_list($conditions, $options);
 	}
+	protected function source_find(array $conditions = [], array $options = []): ?array{
+		return $this->_find($conditions, $options);
+	}
+	protected function collection_string():string{
+		//基于scope构建sql
+		return "";
+	}
+	public function _entity_id(array $data):int|string|null{
+		return $data[static::TABLE_PRIMARY] ?? null;
+	}
+	public function _entity_create(entity $entity, $data):int|string{
+		static::FIELD_CREATED && !array_key_exists(static::FIELD_CREATED, $data) && $data[static::FIELD_CREATED] = time();
+		return $this->table()->insert($data)->execute()->lastInsertId();
+	}
+	public function _entity_update(entity $entity, $update=[]):bool{
+		if(empty($update)) return false;
+		static::FIELD_UPDATED && $update[static::FIELD_UPDATED] = time();
+		return $this->table()->where([static::TABLE_PRIMARY => $entity->id])->update($update)->execute()->ok();
+	}
+	public function _entity_delete(entity $entity):bool{
+		$table = $this->table()->where([static::TABLE_PRIMARY => $entity->id]);
+		static::TOMBSTONE && static::FIELD_DELETED
+			? $table->update([static::FIELD_DELETED => time()])//逻辑删除
+			: $table->delete();
+		return $table->execute()->ok();
+	}
+	public function _entity_string(array $data):string{
+		return json_encode($data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+	}
+
+
 }

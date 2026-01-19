@@ -20,7 +20,7 @@
         "src/parts/"
       ],
       "nx\\helpers\\model\\": [
-        "src/helpers/"
+        "src/helpers/","src/deprecated/"
       ]
     }
   },
